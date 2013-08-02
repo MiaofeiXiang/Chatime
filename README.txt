@@ -1,9 +1,3 @@
-This project is targeted to provide an app for the users in the same LAN to chat or send files to each other. 
-
-In absence of registration step, you don't need to memorize any annoying password or go through sign in or out procedures. Besides,
-
-a server side is not needed, which means it is a client-to-client App. The project posted here has just finished the group chat part, further
-
+This project is targeted to provide an app for the users in the same LAN to chat or send files to each other. In absence of registration step, you don't need to memorize any annoying password or go through sign in or out procedures. Besides, a server side is not needed, which means it is a client-to-client App. The project posted here has just finished the group chat part, further
 functionalities like private conversation, multiple file transfer are still under work. The chat part uses UDP protocol and port number is 8090, and
-
 the file sending part uses TCP protocol and port number is 8899.  
