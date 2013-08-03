@@ -62,11 +62,6 @@ namespace Chatime.Class
             recFilepath = filepath;
             this.remotefilePath = remotefilePath;
             this.remoteIP = IPRemote;
-            if (listener.Connected)
-            {
-                listener.Shutdown(SocketShutdown.Receive);
-                listener.Disconnect(true);
-            }
             try
             {
                 RECt = new Thread(new ThreadStart(RecService));
@@ -132,7 +127,7 @@ namespace Chatime.Class
                             if (readLen != 0 && progressportionCount++ == progressportion)
                             {
                                 if (progressbarportion <= 100)
-                                    FileReceiving(progressbarportion);
+                                    //FileReceiving(progressbarportion);
                                 progressbarportion++;
                                 progressportionCount = 0;
                             }
@@ -155,8 +150,8 @@ namespace Chatime.Class
                     s.Close();
                 if (client != null)
                 {
-                    client.Shutdown(SocketShutdown.Both);
-                    client.Disconnect(false);
+                    client.Shutdown(SocketShutdown.Receive);
+                    client.Disconnect(true);
                     client.Close();
                 }
             }

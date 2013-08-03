@@ -18,26 +18,27 @@ namespace Chatime.Class
     {
         private Socket soc = null;
 
+        private int sendBuffersize;
+
         public event SendFailHandler SendFail;
 
         public TcpSender(Socket tcpSoc)
         {
-            soc = tcpSoc;
+            this.sendBuffersize = tcpSoc.SendBufferSize;
         }
 
         public void SendMessage(TcpMessage msg, IPEndPoint epRemote)
         {
-            if (soc.Connected)
-            {
-                soc.Shutdown(SocketShutdown.Send);
-                soc.Disconnect(true);            
-            }
+            soc = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            soc.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.ReuseAddress, true);
+            soc.SendBufferSize = sendBuffersize;
             try
             {
                 soc.BeginConnect(epRemote as EndPoint, new AsyncCallback(MessageCallBack), msg);
             }
             catch (Exception ex)
             {
+                soc.Close();
                 if (SendFail != null)
                 {
                     SendFail(String.Format("Send Failed! {0}", ex.Message));
@@ -47,9 +48,25 @@ namespace Chatime.Class
 
         private void MessageCallBack(IAsyncResult aResult)
         {
-            soc.EndConnect(aResult);
-            TcpMessage msg = (TcpMessage)aResult.AsyncState;
-            soc.SendFile(msg.filePath, msg.fileinfobuffer, null, TransmitFileOptions.UseDefaultWorkerThread);
+            try
+            {
+                soc.EndConnect(aResult);
+                TcpMessage msg = (TcpMessage)aResult.AsyncState;
+                soc.SendFile(msg.filePath, msg.fileinfobuffer, null, TransmitFileOptions.UseDefaultWorkerThread);
+            }
+            catch (Exception ex)
+            {                
+                if (SendFail != null)
+                {
+                    SendFail(String.Format("Send Failed! {0}", ex.Message));
+                }
+            }
+            finally
+            {
+                soc.Shutdown(SocketShutdown.Both);
+                soc.Disconnect(false);
+                soc.Close();
+            }
         }
     }
 }
