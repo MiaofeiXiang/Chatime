@@ -132,17 +132,7 @@ namespace Chatime.Class
                 tcpReceiver.FileReadyRec -= value;
             }
         }
-        public event FileReceivingEventHandler FileReceiving
-        {
-            add
-            {
-                tcpReceiver.FileReceiving += value;
-            }
-            remove
-            {
-                tcpReceiver.FileReceiving -= value;
-            }
-        }
+        
         public event FileReceivedEventHandler FileReceived
         {
             add
@@ -154,6 +144,19 @@ namespace Chatime.Class
                 tcpReceiver.FileReceived -= value;
             }
         }
+
+        public event FileSentFinishEventHandler FileSent
+        {
+            add
+            {
+                tcpSender.FileSentFinish += value;
+            }
+            remove
+            {
+                tcpSender.FileSentFinish -= value;
+            }
+        }
+
         public event FileRecFailedEventHandler FileRecFailed
         {
             add

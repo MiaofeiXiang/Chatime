@@ -11,8 +11,7 @@ using System.IO;
 namespace Chatime.Class
 {
     public delegate void FileReadyToRecEventHandler(string remotefilePath, IPAddress remoteIP);
-    public delegate void FileReceivingEventHandler(int progressbarportion);
-    public delegate void FileReceivedEventHandler(string filename);
+    public delegate void FileReceivedEventHandler();
     public delegate void FileRecFailedEventHandler(string filename, string error);
 
     /// <summary>
@@ -39,7 +38,6 @@ namespace Chatime.Class
         private string recFilepath;
 
         public event FileReadyToRecEventHandler FileReadyRec;
-        public event FileReceivingEventHandler FileReceiving;
         public event FileReceivedEventHandler FileReceived;
         public event FileRecFailedEventHandler FileRecFailed;
 
@@ -101,10 +99,7 @@ namespace Chatime.Class
                 int readLen = 0;
                 long leftLen = FileLenSent;
                 BinaryWriter sw = new BinaryWriter(File.Open(recFilepath + filename, FileMode.Create));
-                int progressbarportion = 1;
                 int realRecBufferSize = Math.Min(sendBufferSize, recvBufferSize);
-                long progressportion = FileLenSent / 100 / realRecBufferSize;
-                long progressportionCount = 0;
                 using (sw)
                 {
                     if (FileLenSent <= realRecBufferSize)
@@ -124,17 +119,10 @@ namespace Chatime.Class
                                 readLen = s.Read(buffer, 0, (int)leftLen);
                             sw.Write(buffer, 0, readLen);
                             leftLen -= readLen;
-                            if (readLen != 0 && progressportionCount++ == progressportion)
-                            {
-                                if (progressbarportion <= 100)
-                                    //FileReceiving(progressbarportion);
-                                    progressbarportion++;
-                                progressportionCount = 0;
-                            }
+                            
                         }
                     }
-                    //FileReceiving(100);
-                    FileReceived(filename);
+                    FileReceived();
                     sw.Close();
                 }
 

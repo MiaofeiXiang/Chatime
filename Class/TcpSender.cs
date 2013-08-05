@@ -8,6 +8,7 @@ using System.Threading;
 
 namespace Chatime.Class
 {
+    public delegate void FileSentFinishEventHandler();
     /// <summary>
     /// Version:1.0
     /// Date:2013/07/28
@@ -21,6 +22,8 @@ namespace Chatime.Class
         private int sendBuffersize;
 
         public event SendFailHandler SendFail;
+
+        public event FileSentFinishEventHandler FileSentFinish;
 
         public TcpSender(Socket tcpSoc)
         {
@@ -53,6 +56,7 @@ namespace Chatime.Class
                 soc.EndConnect(aResult);
                 TcpMessage msg = (TcpMessage)aResult.AsyncState;
                 soc.SendFile(msg.filePath, msg.fileinfobuffer, null, TransmitFileOptions.UseDefaultWorkerThread);
+                FileSentFinish();
             }
             catch (Exception ex)
             {                

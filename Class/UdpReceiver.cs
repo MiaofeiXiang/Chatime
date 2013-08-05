@@ -96,8 +96,14 @@ namespace Chatime.Class
         /// </summary>
         public void StopListen()        
         {
-            if (workerThread != null)
-                workerThread.Abort();
+            try
+            {
+                if (workerThread != null)
+                    workerThread.Abort();
+            }
+            catch (ThreadAbortException)
+            {
+            }
         }
     }
 }
