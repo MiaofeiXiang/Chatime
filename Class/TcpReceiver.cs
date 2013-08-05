@@ -56,7 +56,7 @@ namespace Chatime.Class
             if (RECt != null)
                 RECt.Abort();
         }
-       
+
         public void ReceiveFile(string filepath, string remotefilePath, IPAddress IPRemote)
         {
             recFilepath = filepath;
@@ -65,13 +65,13 @@ namespace Chatime.Class
             try
             {
                 RECt = new Thread(new ThreadStart(RecService));
-                RECt.Start();            
+                RECt.Start();
             }
             catch (Exception ex)
             {
                 MessageBox.Show(string.Format("Problem receiving File. {0}", ex.Message));
             }
-           
+
         }
 
         private void RecService()
@@ -128,13 +128,13 @@ namespace Chatime.Class
                             {
                                 if (progressbarportion <= 100)
                                     //FileReceiving(progressbarportion);
-                                progressbarportion++;
+                                    progressbarportion++;
                                 progressportionCount = 0;
                             }
                         }
                     }
                     //FileReceiving(100);
-                    //FileReceived(filename);
+                    FileReceived(filename);
                     sw.Close();
                 }
 

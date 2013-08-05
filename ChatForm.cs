@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using System.Net;
+using System.Threading;
 using Chatime.Class;
 using System.IO;
 
@@ -16,10 +17,10 @@ namespace Chatime
     {
         private Talker Messenger;
         private string hostname;
-        private Dictionary<string,IPAddress> UserList; //Store all the online users' host name and IPAddress
+        private Dictionary<string, IPAddress> UserList; //Store all the online users' host name and IPAddress
         private FileReceiveWindow receiveFileDialog;
         private FileSendWindow sendFileDialog;
-        //private FolderBrowserDialog savePathDialog;
+
         public ChatForm()
         {
             InitializeComponent();
@@ -37,24 +38,24 @@ namespace Chatime
             Messenger.FileAccept += this.FileAccept;
             Messenger.FileRefuse += this.FileRefuse;
             Messenger.FileReadyRec += this.FileReadyRec;
-            //Messenger.FileReceiving += this.FileReceiving;
-           // Messenger.FileReceived += this.FileReceived;
+            Messenger.FileReceiving += this.FileReceiving;
+            Messenger.FileReceived += this.FileReceived;
             Messenger.FileRecFailed += this.FileRecFailed;
 
-            UserList = new Dictionary<string,IPAddress>();
+            UserList = new Dictionary<string, IPAddress>();
             hostname = Dns.GetHostName();
-            UserList.Add(hostname,Messenger.LocalIPAddress);
+            UserList.Add(hostname, Messenger.LocalIPAddress);
             list_User.Items.Add(hostname); //local host online
             Messenger.MultiCastNotice(UdpDatagramType.OnLine); //multicast online message 
             Messenger.OpenUdpRec(); //open UDP receiving service 
         }
-       
+
         private void ChatForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             UserList.Remove(hostname);
             list_User.Items.Remove(Dns.GetHostName()); //local host offline
             Messenger.MultiCastNotice(UdpDatagramType.OffLine); //multicast offline message
-            Messenger.CloseTalker();  
+            Messenger.CloseTalker();
         }
 
         private void buttonSend_Click(object sender, EventArgs e)
@@ -92,26 +93,26 @@ namespace Chatime
         }
         private void TcpSendFile(string filepath)
         {
-            Messenger.SendFileNotice(UdpDatagramType.FSendReq,filepath,UserList[(string)list_User.SelectedItem]);
+            Messenger.SendFileNotice(UdpDatagramType.FSendReq, filepath, UserList[(string)list_User.SelectedItem]);
         }
         private void SendFailNotice(string err)
         {
-            MessageBox.Show(string.Format("Sent Failure. Error:{0}",err));
+            MessageBox.Show(string.Format("Sent Failure. Error:{0}", err));
         }
 
         private void MessageReceived(string hostname, IPAddress remoteIP, string txtmsg)
         {
-            if(UserList[hostname].ToString()==remoteIP.ToString()) //validate if the message from a user on the list
-                this.BeginInvoke(new Action(() => { this.listMessage.Items.Add(String.Format("{0}[{1}]:", hostname, DateTime.Now)); this.listMessage.Items.Add(String.Format("{0}",txtmsg)); }));
+            if (UserList[hostname].ToString() == remoteIP.ToString()) //validate if the message from a user on the list
+                this.BeginInvoke(new Action(() => { this.listMessage.Items.Add(String.Format("{0}[{1}]:", hostname, DateTime.Now)); this.listMessage.Items.Add(String.Format("{0}", txtmsg)); }));
         }
 
         private void RemoteOnLine(string hostname, IPAddress remoteIP)
         {
             if (!UserList.ContainsKey(hostname))
             {
-                this.BeginInvoke(new Action(()=>Messenger.MultiCastNotice(UdpDatagramType.OnLine)));
-                this.BeginInvoke(new Action(()=>UserList.Add(hostname,remoteIP)));
-                this.BeginInvoke(new Action(()=>list_User.Items.Add(hostname)));
+                this.BeginInvoke(new Action(() => Messenger.MultiCastNotice(UdpDatagramType.OnLine)));
+                this.BeginInvoke(new Action(() => UserList.Add(hostname, remoteIP)));
+                this.BeginInvoke(new Action(() => list_User.Items.Add(hostname)));
             }
         }
 
@@ -120,33 +121,61 @@ namespace Chatime
             if (UserList.ContainsKey(hostname))
             {
                 this.BeginInvoke(new Action(() => UserList.Remove(hostname)));
-                this.BeginInvoke(new Action(()=>list_User.Items.Remove(hostname)));
+                this.BeginInvoke(new Action(() => list_User.Items.Remove(hostname)));
             }
         }
 
         private void FileSendReq(string remoteHostname, string remotefilePath, IPAddress remoteIP)
         {
             string filepath = "";
-            if (MessageBox.Show(string.Format("User {0} want to send file {1} to you.", remoteHostname, remotefilePath), "Notice", MessageBoxButtons.YesNo) == DialogResult.Yes)
+            try
             {
-                /*savePathDialog = new FolderBrowserDialog();
-                savePathDialog.SelectedPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-                DialogResult result = savePathDialog.ShowDialog();
-                if( result == DialogResult.OK )
+                if (MessageBox.Show(string.Format("User {0} want to send file {1} to you.", remoteHostname, remotefilePath), "Notice", MessageBoxButtons.YesNo) == DialogResult.Yes)
                 {
-                    //filepath = savePathDialog.SelectedPath;
+                    FolderBrowserDialog savePathDialog = new FolderBrowserDialog();
+                    savePathDialog.SelectedPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+                    savePathDialog.InitializeLifetimeService();
+                    DialogResult result = STAShowDialog(savePathDialog);
                     //receiveFileDialog = new FileReceiveWindow();
-                    //receiveFileDialog.Show();
-                    Messenger.SendFileNotice(UdpDatagramType.FAccept, remotefilePath, remoteIP);
-                    Messenger.RecFile(filepath, remoteIP);
-                }*/
-                filepath = @"C:\Disk E\";
-                Messenger.RecFile(filepath, remotefilePath, remoteIP);
+
+                    if (result == DialogResult.OK)
+                    {
+                        filepath = savePathDialog.SelectedPath;
+                        Messenger.SendFileNotice(UdpDatagramType.FAccept, remotefilePath, remoteIP);
+                        Messenger.RecFile(filepath + "\\", remotefilePath, remoteIP);
+                    }
+                    else
+                        Messenger.SendFileNotice(UdpDatagramType.FRefuse, remotefilePath, remoteIP);
+                }
+                else
+                {
+                    Messenger.SendFileNotice(UdpDatagramType.FRefuse, remotefilePath, remoteIP);
+                }
             }
-            else
+            catch (Exception e)
             {
-                Messenger.SendFileNotice(UdpDatagramType.FRefuse, remotefilePath, remoteIP);
+                MessageBox.Show(string.Format(e.Message));
             }
+        }
+
+        private class DialogState
+        {
+            public DialogResult result;
+            public FolderBrowserDialog dialog;
+            public void ThreadProcShowDialog()
+            {
+                result = dialog.ShowDialog();
+            }
+        }
+        private DialogResult STAShowDialog(FolderBrowserDialog savePathDialog)
+        {
+            DialogState state = new DialogState();
+            state.dialog = savePathDialog;
+            System.Threading.Thread t = new System.Threading.Thread(state.ThreadProcShowDialog);
+            t.SetApartmentState(System.Threading.ApartmentState.STA);
+            t.Start();
+            t.Join();
+            return state.result;
         }
 
         private void FileReadyRec(string remotefilePath, IPAddress remoteIP)
@@ -165,17 +194,17 @@ namespace Chatime
         }
         private void FileReceiving(int progressbarportion)
         {
-            receiveFileDialog.BeginInvoke(new Action(()=>receiveFileDialog.updateProgressBar(progressbarportion)));
+            receiveFileDialog.BeginInvoke(new Action(() => receiveFileDialog.updateProgressBar(progressbarportion)));
         }
         private void FileReceived(string filename)
         {
-            MessageBox.Show(string.Format("File {0} successfully received.",filename));
+            MessageBox.Show(string.Format("File {0} successfully received.", filename));
         }
         private void FileRecFailed(string filename, string err)
         {
             MessageBox.Show(string.Format("Receiving File {0} confront error. Error:{1}", filename, err));
         }
 
-      
+
     }
 }
