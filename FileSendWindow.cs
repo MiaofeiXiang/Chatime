@@ -22,33 +22,27 @@ namespace Chatime
 
         private void button_Browse_Click(object sender, EventArgs e)
         {
-            using (OpenFileDialog OpenFD = new OpenFileDialog())     //实例化一个 OpenFileDialog 的对象
+            using (OpenFileDialog OpenFD = new OpenFileDialog())
             {
 
-                //定义打开的默认文件夹位置
                 OpenFD.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
 
 
-                OpenFD.ShowDialog();                  //显示打开本地文件的窗体
+                OpenFD.ShowDialog();                  //show a modal dialogue
                 filepath = OpenFD.FileName;
-                textBox_filepath.Text = OpenFD.FileName;             //将 路径名称 显示在 textBox 控件上
+                textBox_filepath.Text = OpenFD.FileName;             //show the selected file path in textBox
             }
         }
 
         private void button_Send_Click(object sender, EventArgs e)
         {
-            if (File.Exists(filepath))
+            if (File.Exists(filepath)) //check if the selected file exists
             {
-                fileReadyToSend(filepath);
+                fileReadyToSend(filepath); //raise file ready to send event
                 this.Close();
             }
             else
                 MessageBox.Show("Please select a valid file!");
-        }
-
-        private void FileSendWindow_Load(object sender, EventArgs e)
-        {
-
         }
     }
 }

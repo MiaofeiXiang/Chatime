@@ -70,7 +70,6 @@
             this.Controls.Add(this.textBox_filepath);
             this.Name = "FileSendWindow";
             this.Text = "FileSendWindow";
-            this.Load += new System.EventHandler(this.FileSendWindow_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
 
