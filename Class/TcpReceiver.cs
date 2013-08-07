@@ -43,8 +43,8 @@ namespace Chatime.Class
 
         public TcpReceiver(Socket tcpSoc)
         {
-            listener = tcpSoc; 
-            listener.Listen(1); //put the tcp socket in listenning mode
+            listener = tcpSoc;
+            listener.Listen(1);
             sendBufferSize = tcpSoc.SendBufferSize;
             recvBufferSize = tcpSoc.ReceiveBufferSize;
         }
@@ -54,12 +54,7 @@ namespace Chatime.Class
             if (RECt != null)
                 RECt.Abort();
         }
-        /// <summary>
-        /// Receive file
-        /// </summary>
-        /// <param name="filepath">file saving path</param>
-        /// <param name="remotefilePath">sending file path</param>
-        /// <param name="IPRemote">sender IP address</param>
+
         public void ReceiveFile(string filepath, string remotefilePath, IPAddress IPRemote)
         {
             recFilepath = filepath;
@@ -76,9 +71,7 @@ namespace Chatime.Class
             }
 
         }
-        /// <summary>
-        /// Receive file thread entry function
-        /// </summary>
+
         private void RecService()
         {
             string filename = "";
@@ -91,22 +84,22 @@ namespace Chatime.Class
             NetworkStream s = null;
             try
             {
-                FileReadyRec(this.remotefilePath, this.remoteIP); //raise file ready to receive event
-                client = listener.Accept(); //waiting for connection request in blocking mode
+                FileReadyRec(this.remotefilePath, this.remoteIP);
+                client = listener.Accept();
                 client.ReceiveBufferSize = recvBufferSize;
                 s = new NetworkStream(client);
                 s.Read(nameBuffer, 0, 3);
                 filenameLen = (int)nameBuffer[1];
                 nameBuffer = new byte[filenameLen + 2];
                 s.Read(nameBuffer, 0, filenameLen + 2);
-                filename = Encoding.UTF8.GetString(nameBuffer, 1, filenameLen); //extract the receiving filename 
+                filename = Encoding.UTF8.GetString(nameBuffer, 1, filenameLen);
 
                 s.Read(FileLenSentArr, 0, 10);
-                FileLenSent = BitConverter.ToInt64(FileLenSentArr, 1); //extract the whole receiving file length
+                FileLenSent = BitConverter.ToInt64(FileLenSentArr, 1);
                 int readLen = 0;
                 long leftLen = FileLenSent;
-                BinaryWriter sw = new BinaryWriter(File.Open(recFilepath + filename, FileMode.Create)); //open the binary writer in designated file saving location
-                int realRecBufferSize = Math.Min(sendBufferSize, recvBufferSize); //obtain the real receiving buffer size
+                BinaryWriter sw = new BinaryWriter(File.Open(recFilepath + filename, FileMode.Create));
+                int realRecBufferSize = Math.Min(sendBufferSize, recvBufferSize);
                 using (sw)
                 {
                     if (FileLenSent <= realRecBufferSize)
@@ -129,7 +122,7 @@ namespace Chatime.Class
                             
                         }
                     }
-                    FileReceived(); //raise file received event
+                    FileReceived();
                     sw.Close();
                 }
 
@@ -137,9 +130,9 @@ namespace Chatime.Class
             catch (Exception ex)
             {
                 if (FileRecFailed != null)
-                    FileRecFailed(filename, ex.Message.ToString()); //raise file received failure event
+                    FileRecFailed(filename, ex.Message.ToString());
             }
-            finally //release all the network resources
+            finally
             {
                 if (s != null)
                     s.Close();

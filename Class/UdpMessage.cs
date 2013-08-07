@@ -4,13 +4,14 @@ using System.Linq;
 using System.Text;
 using System.Net;
 using System.Net.Sockets;
+using System.Windows.Forms;
 //Reference: bbs.csdn.net/topics/39030797 posted by user[yyl8781697]
 namespace Chatime.Class
 {
     /// <summary>
     /// Define the type of UdpDatagram
     /// </summary>
-    public enum UdpDatagramType
+    public enum UdpDatagramType:byte
     {
         OnLine = 1, 
 
@@ -90,12 +91,13 @@ namespace Chatime.Class
         /// </summary>
         public override string ToString()
         {
-            StringBuilder msg = new StringBuilder();         
-            msg.AppendFormat("Type={0},", this.Type.ToString());
-            msg.AppendFormat("FromAddress={0},", this.FromAddress);
-            msg.AppendFormat("ToAddress={0},", this.ToAddress);
-            msg.AppendFormat("HostName={0},", this.HostName);
-            msg.AppendFormat("Message={0}", this.Message);
+            StringBuilder msg = new StringBuilder();
+            msg.AppendFormat("{0},", this.Type.ToString());
+            msg.AppendFormat("{0},", this.FromAddress);
+            msg.AppendFormat("{0},", this.ToAddress);
+            msg.AppendFormat("{0},", this.HostName.Length);
+            msg.AppendFormat("{0},", this.HostName);
+            msg.AppendFormat("{0}", this.Message);
          
             return msg.ToString();
         }
@@ -107,20 +109,46 @@ namespace Chatime.Class
         public static UdpDatagram Convert(string netstr)
         {
             UdpDatagram data = new UdpDatagram();
-            IDictionary<string, string> idict = new Dictionary<string, string>();
-            string[] strlist = netstr.Split(',');
-            for (int i = 0; i < strlist.Length; i++)
+
+            int ChCount = 0;
+            int netstrLen = netstr.Length;
+            int headfieldcount = 1;
+            string typestr = "";
+            string fromAddrstr = "";
+            string toAddrstr = "";
+            string hostnamestr = "";
+            string hostnameLenstr = "";
+            int hostnameLen = 0;
+            string messagestr = "";
+
+
+            for (; ChCount < netstrLen && headfieldcount!=6; ChCount++) //Extract all the headerfields
             {
-                string[] info = strlist[i].Split('='); //put corresponding message data field into dictionary object
-                idict.Add(info[0], info[1]);
+                if (headfieldcount != 6&&netstr[ChCount] == ',')
+                {
+                    if (headfieldcount == 4)
+                        hostnameLen = int.Parse(hostnameLenstr);
+                    headfieldcount++;                    
+                }
+                else if(netstr[ChCount] != ',')
+                {
+                    switch (headfieldcount)
+                    {
+                        case 1: typestr += netstr[ChCount]; break;
+                        case 2: fromAddrstr += netstr[ChCount]; break;
+                        case 3: toAddrstr += netstr[ChCount]; break;
+                        case 4: hostnameLenstr += netstr[ChCount]; break;
+                        case 5: hostnamestr = netstr.Substring(ChCount, hostnameLen); ChCount += hostnameLen - 1; break;
+                    }
+                }
             }
-
-            data.Type = (UdpDatagramType)Enum.Parse(typeof(UdpDatagramType), idict["Type"]);
-            data.FromAddress = idict["FromAddress"];
-            data.ToAddress = idict["ToAddress"];  
-            data.HostName = idict["HostName"];  
-            data.Message = idict["Message"];
-
+            if(ChCount < netstrLen)
+                messagestr = netstr.Substring(ChCount);
+            data.Type = (UdpDatagramType)Enum.Parse(typeof(UdpDatagramType), typestr);
+            data.FromAddress = fromAddrstr;
+            data.ToAddress = toAddrstr;  
+            data.HostName = hostnamestr;  
+            data.Message = messagestr;
             return data;
         }
     }

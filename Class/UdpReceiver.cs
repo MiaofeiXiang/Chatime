@@ -66,7 +66,7 @@ namespace Chatime.Class
             byte[] buffer = new byte[soc.ReceiveBufferSize];
             EndPoint remoteEP = new IPEndPoint(IPAddress.Any, 0);
             try
-            {
+            { 
                 while (true)
                 {
                     int len = soc.ReceiveFrom(buffer, ref remoteEP);

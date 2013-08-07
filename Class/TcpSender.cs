@@ -29,19 +29,34 @@ namespace Chatime.Class
         {
             this.sendBuffersize = tcpSoc.SendBufferSize;
         }
-        /// <summary>
-        /// Send file function
-        /// </summary>
-        /// <param name="msg">Tcp message</param>
-        /// <param name="epRemote">remote IP information</param>
+
         public void SendMessage(TcpMessage msg, IPEndPoint epRemote)
         {
-            soc = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp); 
+            soc = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             soc.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.ReuseAddress, true);
             soc.SendBufferSize = sendBuffersize;
             try
             {
-                soc.BeginConnect(epRemote as EndPoint, new AsyncCallback(MessageCallBack), msg); //socket using ephemeral port starts connecting with remote TCP port
+                soc.BeginConnect(epRemote as EndPoint, new AsyncCallback(MessageCallBack), msg);
+            }
+            catch (Exception ex)
+            {
+                soc.Close();
+                if (SendFail != null)
+                {
+                    SendFail(String.Format("Send Failed! {0}", ex.Message));
+                }
+            }           
+        }
+
+        private void MessageCallBack(IAsyncResult aResult)
+        {
+            try
+            {
+                soc.EndConnect(aResult);
+                TcpMessage msg = (TcpMessage)aResult.AsyncState;
+                soc.SendFile(msg.filePath, msg.fileinfobuffer, null, TransmitFileOptions.UseDefaultWorkerThread);
+                FileSentFinish();
             }
             catch (Exception ex)
             {                
@@ -51,31 +66,6 @@ namespace Chatime.Class
                 }
             }
             finally
-            {
-                soc.Close();
-            }
-        }
-        /// <summary>
-        /// Message call back function
-        /// </summary>
-        /// <param name="aResult">Tcp message boxed in state object</param>
-        private void MessageCallBack(IAsyncResult aResult)
-        {
-            try
-            {
-                soc.EndConnect(aResult); //obtain a socket connection 
-                TcpMessage msg = (TcpMessage)aResult.AsyncState;
-                soc.SendFile(msg.filePath, msg.fileinfobuffer, null, TransmitFileOptions.UseDefaultWorkerThread); //send file in blocking mode
-                FileSentFinish(); //raise file successfully sent event
-            }
-            catch (Exception ex)
-            {                
-                if (SendFail != null)
-                {
-                    SendFail(String.Format("Send Failed! {0}", ex.Message));
-                }
-            }
-            finally //release all the network resources
             {
                 soc.Shutdown(SocketShutdown.Both);
                 soc.Disconnect(false);
