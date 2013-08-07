@@ -3,4 +3,4 @@ The project posted here has finished the group chat and file transfer(one file a
 
 Below are some screenshots of the app:
 
-![image](https://github.com/ShadowShade/Chatime/raw/master/screenshots/vim-screenshot.jpg)  
+![image](https://github.com/ShadowShade/Chatime/raw/master/screenshots/FileSendReq.png)  
