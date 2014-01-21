@@ -33,6 +33,9 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>Communication_icon.ico</ApplicationIcon>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -52,6 +55,7 @@
     <Compile Include="ChatForm.Designer.cs">
       <DependentUpon>ChatForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Class\FileInfo.cs" />
     <Compile Include="Class\Talker.cs" />
     <Compile Include="Class\TcpMessage.cs" />
     <Compile Include="Class\TcpReceiver.cs" />
@@ -107,6 +111,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Image\progress_bar.gif" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Communication_icon.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

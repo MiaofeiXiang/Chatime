@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ChatForm));
             this.list_User = new System.Windows.Forms.ListBox();
             this.groupUser = new System.Windows.Forms.GroupBox();
             this.textMessage = new System.Windows.Forms.TextBox();
@@ -102,6 +103,7 @@
             this.Controls.Add(this.buttonSend);
             this.Controls.Add(this.textMessage);
             this.Controls.Add(this.groupUser);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
             this.MaximumSize = new System.Drawing.Size(743, 538);
             this.MinimizeBox = false;

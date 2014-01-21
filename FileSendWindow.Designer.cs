@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FileSendWindow));
             this.textBox_filepath = new System.Windows.Forms.TextBox();
             this.button_Browse = new System.Windows.Forms.Button();
             this.button_Send = new System.Windows.Forms.Button();
@@ -68,8 +69,10 @@
             this.Controls.Add(this.button_Send);
             this.Controls.Add(this.button_Browse);
             this.Controls.Add(this.textBox_filepath);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "FileSendWindow";
             this.Text = "FileSendWindow";
+            this.Load += new System.EventHandler(this.FileSendWindow_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
 

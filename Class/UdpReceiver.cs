@@ -66,23 +66,27 @@ namespace Chatime.Class
             byte[] buffer = new byte[soc.ReceiveBufferSize];
             EndPoint remoteEP = new IPEndPoint(IPAddress.Any, 0);
             try
-            { 
+            {
                 while (true)
                 {
                     int len = soc.ReceiveFrom(buffer, ref remoteEP);
                     UdpDatagram msg = UdpDatagram.Convert(Encoding.UTF8.GetString(buffer, 0, len));
                     switch (msg.Type)
                     {
-                        case UdpDatagramType.Chat: RemoteMessageReceived(msg.HostName, IPAddress.Parse(msg.FromAddress),msg.Message); break;
+                        case UdpDatagramType.Chat: RemoteMessageReceived(msg.HostName, IPAddress.Parse(msg.FromAddress), msg.Message); break;
                         case UdpDatagramType.OnLine: RemoteOnLine(msg.HostName, IPAddress.Parse(msg.FromAddress)); break;
                         case UdpDatagramType.OffLine: RemoteOffLine(msg.HostName, IPAddress.Parse(msg.FromAddress)); break;
                         case UdpDatagramType.FAccept: FileAccept(msg.HostName, msg.Message, IPAddress.Parse(msg.FromAddress)); break;
-                        case UdpDatagramType.FRefuse: FileRefuse(msg.HostName, msg.Message,IPAddress.Parse(msg.FromAddress)); break;
+                        case UdpDatagramType.FRefuse: FileRefuse(msg.HostName, msg.Message, IPAddress.Parse(msg.FromAddress)); break;
                         case UdpDatagramType.FSendReq: FileSendReq(msg.HostName, msg.Message, IPAddress.Parse(msg.FromAddress)); break;
                     }
                 }
             }
             catch (SocketException)
+            {
+
+            }
+            catch (ThreadAbortException)
             {
 
             }

@@ -23,7 +23,7 @@ namespace Chatime
         private void FileTransWindow_Load(object sender, EventArgs e)
         {
             label1.Text = filename;
-            label1.Location = new Point(this.Width / 2 - label1.Width / 2,label1.Location.Y); //put the label text in the middle of form body
+            label1.Location = new Point(this.Width / 2 - label1.Width / 2,label1.Location.Y);
         }
     }
 }
